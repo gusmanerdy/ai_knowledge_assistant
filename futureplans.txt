@@ -1,0 +1,95 @@
+AI Knowledge Assistant - Future Plans
+
+Product direction
+The app should become a focused academic research assistant for discovering,
+ranking, summarizing, and comparing scholarly papers. It should be useful for
+both English and Indonesian-speaking users, while staying honest about source
+availability and citation limits.
+
+1. Paper search
+- Let users search by research topic or question.
+- Search trusted academic sources first, such as Semantic Scholar and OpenAlex.
+- Later add arXiv, Crossref, and other scholarly metadata sources.
+- Return useful metadata: title, authors, year, abstract, DOI, source URL,
+  citation count, source name, and access status.
+- Support filters for year range, source, result count, sort order, and language.
+
+2. Restricted and paywalled papers
+- Never bypass paywalls or restricted access.
+- Clearly mark each paper as open access, restricted, preprint available, or
+  unknown.
+- Keep restricted papers in results when the metadata is useful.
+- Prefer legal open versions when available, such as arXiv, author preprints,
+  institutional repositories, Semantic Scholar links, OpenAlex open access
+  links, Crossref license links, or Unpaywall in a later version.
+- Add fields such as access_status, available_links, best_available_url, and
+  summary_basis.
+- If only the abstract is available, summaries must say they are based on the
+  abstract only.
+- Suggest legal next steps for restricted papers, such as checking institution
+  access, looking for a preprint, using the DOI, or contacting the author.
+
+3. Paper ranking
+- Rank papers by relevance to the user query.
+- Start with explainable rules: abstract availability, citation count, recency,
+  source quality, and open availability.
+- Show ranking reasons so users understand why a paper was selected.
+- Later add semantic reranking or embeddings if simple ranking is not enough.
+
+4. Paper summaries
+- Generate short, practical summaries for each paper.
+- Summaries should identify the research problem, method or approach, key
+  findings, limitations when available, and why the paper is relevant.
+- The app must clearly state whether a summary is based on abstract only,
+  metadata only, or full available text.
+- Avoid overconfident claims when source text is limited.
+
+5. Research briefs
+- Generate a topic-level research brief from selected papers.
+- Include a topic overview, top relevant papers, common themes, conflicting
+  findings, open questions, research gaps, and suggested next papers to read.
+- Cite sources clearly inside the brief.
+
+6. Question answering
+- Allow users to ask follow-up questions based on retrieved papers.
+- Use only the current retrieved paper context unless the user asks for a new
+  search.
+- Cite the papers used in each answer.
+- Say when the available sources are insufficient.
+- Prefer cautious, grounded answers over broad unsupported claims.
+
+7. English and Indonesian support
+- Add two separate controls instead of one toggle that does everything:
+  interface language and search language.
+- Interface language options: English and Indonesian.
+- Search language options: Any, English, and Indonesian.
+- Indonesian interface mode should translate app labels, result explanations,
+  summaries, briefs, and answers into Indonesian.
+- Indonesian interface mode should not automatically force Indonesian-only
+  paper search, because many academic papers are published in English.
+- Start with English paper search first for better coverage.
+- Add Indonesian output early so users can read summaries and briefs in
+  Indonesian even when the source papers are English.
+- Later add Indonesian paper search with language metadata, language inference,
+  Indonesian query expansion, and Indonesian academic sources where possible.
+- If a user searches in Indonesian, support bilingual query expansion. For
+  example, "evaluasi RAG" can search both "evaluasi RAG" and "RAG evaluation".
+
+8. Future OCR support
+- Keep OCR as a later optional feature.
+- Possible use cases: screenshots, scanned paper pages, image-based PDFs, and
+  extracting text from visual documents.
+- Do not include OCR in the first version because it adds extra complexity,
+  model choices, and resource usage.
+
+Recommended implementation order
+1. Strengthen the existing paper search endpoint.
+2. Add access status and legal open-version discovery.
+3. Improve ranking explanations.
+4. Add summary_basis and better abstract-based summaries.
+5. Add Indonesian interface/output support.
+6. Add search language filtering and bilingual query expansion.
+7. Add research brief generation with citations.
+8. Add question answering over retrieved papers.
+9. Add more academic sources.
+10. Add OCR only after the core research workflow is stable.

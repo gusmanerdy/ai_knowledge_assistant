@@ -1,0 +1,132 @@
+Docker Desktop release notes for this app
+=========================================
+
+Goal
+----
+Run the local app inside Docker Desktop on Mac.
+
+
+Basic flow
+----------
+local code -> Dockerfile -> docker build -> docker run -> open localhost
+
+
+Step 1: Open Docker Desktop
+---------------------------
+Make sure Docker Desktop is running on your Mac before using Docker commands.
+
+Check Docker from Terminal:
+
+docker --version
+
+
+Step 2: Create a Dockerfile
+---------------------------
+Create a file named:
+
+Dockerfile
+
+Example for a typical Python app:
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "app/main.py"]
+
+
+Step 3: Build the Docker image
+------------------------------
+Run this from the project folder:
+
+docker build -t ai-knowledge-assistant .
+
+Meaning:
+- docker build creates an image
+- -t ai-knowledge-assistant gives the image a name
+- . means use the current folder as the build context
+
+
+Step 4: Run the container
+-------------------------
+Run:
+
+docker run --name ai-knowledge-assistant -p 8000:8000 ai-knowledge-assistant
+
+Meaning:
+- docker run starts a container from the image
+- --name ai-knowledge-assistant gives the container a name
+- -p 8000:8000 maps Mac port 8000 to container port 8000
+- the final ai-knowledge-assistant is the image name
+
+
+Step 5: Open the app
+--------------------
+In your browser, open:
+
+http://localhost:8000
+
+
+Common CMD examples
+-------------------
+FastAPI:
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+Streamlit:
+
+CMD ["streamlit", "run", "app/main.py", "--server.address=0.0.0.0", "--server.port=8501"]
+
+Then run with:
+
+docker run --name ai-knowledge-assistant -p 8501:8501 ai-knowledge-assistant
+
+Flask:
+
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+
+Then run with:
+
+docker run --name ai-knowledge-assistant -p 5000:5000 ai-knowledge-assistant
+
+
+Useful Docker commands
+----------------------
+See running containers:
+
+docker ps
+
+See all containers, including stopped ones:
+
+docker ps -a
+
+Stop a container:
+
+docker stop ai-knowledge-assistant
+
+Start an existing stopped container:
+
+docker start ai-knowledge-assistant
+
+Remove a stopped container:
+
+docker rm ai-knowledge-assistant
+
+Remove an image:
+
+docker rmi ai-knowledge-assistant
+
+
+Important reminder
+------------------
+If you change the code, rebuild the image before running again:
+
+docker build -t ai-knowledge-assistant .
+
+Then run the container again.
