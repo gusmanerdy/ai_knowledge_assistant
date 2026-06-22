@@ -108,13 +108,16 @@ POST /ask                Answer a question using retrieved paper context
 
 1. Build a basic paper search endpoint using one academic API.
 2. Normalize paper metadata into a consistent internal schema.
-3. Add query constraints such as year range, result count, and source.
-4. Add simple rule-based ranking.
-5. Add short paper summaries.
-6. Add research brief generation with source citations.
-7. Add support for multiple academic APIs.
-8. Add semantic reranking or embeddings if basic ranking is not enough.
-9. Add OCR support later for uploaded screenshots, scanned papers, or image-based documents.
+3. Add PostgreSQL as the application database.
+4. Add pgvector for semantic paper search and embedding storage.
+5. Add PostgreSQL full-text search for keyword, title, author, and abstract search.
+6. Add query constraints such as year range, result count, and source.
+7. Add simple rule-based ranking.
+8. Add short paper summaries.
+9. Add research brief generation with source citations.
+10. Add support for multiple academic APIs.
+11. Add semantic reranking or embeddings if basic ranking is not enough.
+12. Add OCR support later for uploaded screenshots, scanned papers, or image-based documents.
 
 ## Current Stack
 
@@ -122,12 +125,18 @@ The current dependency set includes:
 
 - FastAPI
 - Uvicorn
-- LangChain
-- FAISS
-- Sentence Transformers
-- PyPDF
+- HTTPX
+- Pydantic
 
 Some dependencies were originally selected for local document RAG. As the project pivots toward academic paper discovery, the dependency list may be simplified or adjusted.
+
+## Planned Database And Search Stack
+
+Phase 1 should use PostgreSQL as the source of truth, with pgvector for semantic search and PostgreSQL full-text search for keyword search.
+
+PostgreSQL should store paper metadata, authors, sources, saved searches, summaries, and embeddings. pgvector should handle vector similarity queries over paper embeddings. PostgreSQL full-text search should handle lightweight keyword search across titles, abstracts, authors, topics, and source metadata.
+
+Meilisearch can be considered later as Phase 2 if the app needs a more polished search experience with typo tolerance, search-as-you-type, or dedicated keyword ranking. It should be treated as a secondary index synced from PostgreSQL, not as the source of truth.
 
 ## Installation
 

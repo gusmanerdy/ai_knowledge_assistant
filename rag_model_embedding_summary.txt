@@ -1,0 +1,347 @@
+RAG SYSTEM MODEL AND EMBEDDING SUMMARY
+======================================
+
+Project focus:
+This chatbot will be designed as a lightweight Retrieval-Augmented Generation
+(RAG) system for academic paper discovery and question answering.
+
+The main experimental direction is:
+
+1. Use two chat-model deployment paths: OpenRouter API models and local Qwen
+   GGUF.
+2. Compare multiple embedding methods for document retrieval.
+3. Evaluate the RAG system based on chunking, embedding quality, retrieval
+   optimization, hallucination reduction, and lightweight deployment.
+
+
+CHAT MODEL SUMMARY
+==================
+
+Selected chat-model options:
+
+1. Qwen2.5-3B-Instruct GGUF 4-bit
+2. OpenRouter-hosted chat models
+
+Role in the system:
+The chat model will be used as the answer-generation model. It should receive
+retrieved context from academic papers and generate the final response for the
+user.
+
+Important distinction:
+The chat model is not the main embedding model. It should not be used as the
+primary method for vector search. Instead, a dedicated embedding model should
+convert paper titles, abstracts, and text chunks into vectors.
+
+Recommended architecture:
+
+User query
+-> embedding model
+-> vector search / retrieval
+-> top relevant paper chunks
+-> chat model through OpenRouter or local Qwen GGUF
+-> grounded chatbot answer
+
+Option 1: Qwen2.5-3B-Instruct GGUF 4-bit
+----------------------------------------
+
+- It is relatively lightweight compared with larger 7B, 14B, or 70B models.
+- A 4-bit GGUF version is suitable for local deployment using tools such as
+  llama.cpp, Ollama, or LM Studio.
+- It can support a local-first chatbot prototype without depending on a paid
+  generation API.
+- It is suitable for lightweight RAG experiments where the main focus is
+  retrieval quality and grounded answering.
+
+Expected strengths:
+
+- Practical for local deployment.
+- Lower memory usage because of 4-bit quantization.
+- Good enough for prototype-level academic question answering.
+- Useful for testing whether retrieval quality can improve answer quality.
+
+Expected limitations:
+
+- A 3B model may be weaker than larger models for complex academic reasoning.
+- It may struggle with long multi-paper synthesis if too much context is given.
+- It still needs strong retrieval and prompting to reduce hallucination.
+- It should be instructed to answer only from retrieved sources.
+
+Best use:
+Use Qwen2.5-3B-Instruct GGUF 4-bit as the lightweight local deployment
+baseline.
+
+Option 2: OpenRouter-hosted chat models
+---------------------------------------
+
+OpenRouter can be used as an API gateway for testing different hosted chat
+models without changing the overall RAG pipeline.
+
+Expected strengths:
+
+- Easy model switching for experiments.
+- No need to run the generation model locally.
+- Useful for comparing Qwen, GPT, Claude, Gemini, Mistral, or other models.
+- Faster development because the app can call a hosted chat API.
+
+Expected limitations:
+
+- Not fully local or lightweight.
+- Requires internet access and API cost.
+- Latency and availability depend on external providers.
+- Reproducibility may be harder if providers update or route models
+  differently over time.
+- Privacy and data-handling policies must be checked before sending paper
+  context or user queries.
+
+Best use:
+Use OpenRouter for flexible experiments and comparison of chat models, while
+keeping local Qwen GGUF as the lightweight deployment baseline.
+
+
+EMBEDDING METHODS COMPARISON
+============================
+
+The embedding model is responsible for converting user queries and paper text
+into vectors. These vectors are compared during retrieval to find semantically
+relevant papers or chunks.
+
+Important rule:
+The same embedding model must be used for both the indexed documents and the
+user query. If the embedding model changes, the vector index should be rebuilt.
+
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| No | Embedding Method                    | Deployment Type      | Best Use                  | Reason to Pick                                               | Possible Limitation                               |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| 1  | all-MiniLM-L6-v2                    | Local open-source    | Baseline retrieval        | Fast, small, easy to run on CPU, widely used in semantic     | Lower retrieval quality than newer or larger      |
+|    |                                      |                      |                           | search. Good as a baseline model for comparison.             | embedding models.                                 |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| 2  | BAAI/bge-base-en-v1.5               | Local open-source    | General RAG retrieval     | Strong balance between quality and efficiency. Good choice   | Larger than MiniLM and mainly optimized for       |
+|    |                                      |                      |                           | for English academic search and practical local RAG.         | English retrieval.                                |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| 3  | intfloat/e5-base-v2                 | Local open-source    | Query-passage retrieval   | Designed for retrieval using query/document style input.     | Requires correct prefixes such as "query:" and    |
+|    |                                      |                      |                           | Useful for comparing asymmetric retrieval methods.           | "passage:" for best performance.                  |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| 4  | allenai/specter2                    | Local open-source    | Scientific paper search   | Domain-specific model for scientific documents. Very         | More specialized and may require extra setup      |
+|    |                                      |                      |                           | relevant when searching papers using title and abstract.     | compared with simple sentence-transformers.       |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+| 5  | OpenAI text-embedding-3-small       | API-based            | Production API baseline   | Strong practical embedding model with simple integration.    | Requires internet access, API cost, and external  |
+|    |                                      |                      |                           | Useful as a commercial baseline against local models.        | dependency. Less transparent than local models.   |
++----+--------------------------------------+----------------------+---------------------------+--------------------------------------------------------------+---------------------------------------------------+
+
+
+RAG SYSTEM EVALUATION FOCUS
+===========================
+
+1. Chunking Comparison
+----------------------
+
+Chunking is the process of splitting long documents into smaller parts before
+embedding and retrieval.
+
+Possible chunking strategies:
+
+- Fixed-size chunks:
+  Split text by a fixed number of tokens or characters.
+  Simple and easy to reproduce.
+
+- Sliding-window chunks:
+  Use overlap between chunks so important information is not lost at chunk
+  boundaries.
+
+- Section-based chunks:
+  Split papers by structure, such as abstract, introduction, method, results,
+  and conclusion.
+
+- Metadata-aware chunks:
+  Include title, authors, year, source, and abstract together with the chunk
+  text.
+
+Recommended comparison for this project:
+
+- Abstract-only retrieval.
+- Title + abstract retrieval.
+- Full text chunk retrieval if full paper text is available.
+- Chunk sizes such as 256, 512, and 1024 tokens.
+- Chunk overlap such as 0 percent, 10 percent, and 20 percent.
+
+Why it matters:
+Bad chunking can cause the retriever to miss important context. Good chunking
+improves answer grounding and reduces hallucination.
+
+
+2. Embedding Evaluation
+-----------------------
+
+Embedding evaluation measures how well each embedding method retrieves relevant
+academic papers or chunks.
+
+Possible evaluation metrics:
+
+- Precision@k:
+  How many of the top-k retrieved results are relevant.
+
+- Recall@k:
+  How many relevant documents are found in the top-k results.
+
+- MRR:
+  Mean Reciprocal Rank measures how high the first relevant result appears.
+
+- nDCG:
+  Measures ranking quality when relevance has graded levels.
+
+- Human relevance judgment:
+  Manually check whether retrieved papers are useful for the query.
+
+Recommended evaluation setup:
+
+- Run retrieval experiments with the same dataset and query set.
+- Use Qwen2.5-3B-Instruct GGUF 4-bit as the local generation baseline.
+- Use OpenRouter models as hosted generation alternatives.
+- Keep the same dataset and queries for all embedding models.
+- Rebuild the vector index for each embedding model.
+- Compare retrieval quality using the same top-k setting.
+- Optionally compare final answer quality after retrieval.
+
+
+3. Retrieval Optimization
+-------------------------
+
+Retrieval optimization improves the quality of context passed to the chat model.
+
+Possible methods:
+
+- Top-k tuning:
+  Compare k = 3, 5, 10, and 15 retrieved chunks.
+
+- Similarity threshold:
+  Remove weakly related chunks below a similarity score threshold.
+
+- Hybrid retrieval:
+  Combine semantic vector search with keyword search such as BM25.
+
+- Metadata filtering:
+  Filter by year, source, paper type, citation count, or academic database.
+
+- Reranking:
+  Use a stronger reranker after initial retrieval to reorder the top results.
+
+Recommended approach:
+Start with dense retrieval using embeddings, then test whether hybrid retrieval
+or reranking improves paper relevance.
+
+
+4. Hallucination Reduction
+--------------------------
+
+Hallucination means the chatbot produces claims that are not supported by the
+retrieved sources.
+
+Strategies to reduce hallucination:
+
+- Use retrieval-grounded prompting:
+  Tell Qwen to answer only from retrieved context.
+
+- Require citations:
+  Each important claim should cite the paper title, DOI, or source URL.
+
+- Add insufficient-evidence behavior:
+  The chatbot should say when the retrieved papers do not contain enough
+  information.
+
+- Limit context to high-quality chunks:
+  Avoid passing irrelevant retrieved text into the prompt.
+
+- Compare answer faithfulness:
+  Check whether generated answers are supported by the retrieved paper text.
+
+Recommended hallucination rule:
+If the retrieved context does not support an answer, the model should say:
+"The retrieved sources are not sufficient to answer this confidently."
+
+
+5. Lightweight Deployment
+-------------------------
+
+Lightweight deployment means the system can run locally or on limited hardware.
+
+Relevant choices:
+
+- Local chat model:
+  Qwen2.5-3B-Instruct GGUF 4-bit.
+
+- Hosted chat model:
+  OpenRouter-hosted models for API-based experiments.
+
+- Local inference:
+  llama.cpp, Ollama, or LM Studio.
+
+- Vector store:
+  FAISS or Chroma for local vector search.
+
+- Embedding models:
+  Start with MiniLM, BGE, or E5 for local deployment.
+
+- API comparison:
+  OpenAI text-embedding-3-small can be used as an external baseline.
+
+Deployment tradeoff:
+Local models reduce cost and improve privacy, but may be slower or less accurate
+than larger API models. API embeddings are easier to use and often strong, but
+they introduce cost and external dependency.
+
+OpenRouter tradeoff:
+OpenRouter makes chat-model comparison easier, but it moves the generation step
+outside the local environment. Therefore, it should be treated as an experiment
+and comparison option, while Qwen GGUF remains the lightweight local deployment
+baseline.
+
+
+RECOMMENDED EXPERIMENT DESIGN
+=============================
+
+Chat-model components:
+
+1. Qwen2.5-3B-Instruct GGUF 4-bit as the local lightweight baseline.
+2. OpenRouter-hosted chat models as flexible API-based alternatives.
+
+Variable component:
+Embedding method.
+
+Embedding methods to compare:
+
+1. all-MiniLM-L6-v2
+2. BAAI/bge-base-en-v1.5
+3. intfloat/e5-base-v2
+4. allenai/specter2
+5. OpenAI text-embedding-3-small
+
+Suggested research question:
+How do different embedding methods affect retrieval quality, hallucination
+reduction, and answer usefulness in an academic RAG chatbot using both local
+Qwen2.5-3B-Instruct GGUF 4-bit and OpenRouter-hosted chat models?
+
+Suggested evaluation dimensions:
+
+- Retrieval relevance.
+- Answer faithfulness.
+- Citation accuracy.
+- Latency.
+- Memory usage.
+- Ease of deployment.
+- Cost.
+
+Expected conclusion direction:
+The best embedding method is not always the largest model. For this project,
+the best method should balance retrieval quality, hallucination reduction,
+latency, memory usage, and deployment simplicity.
+
+
+SHORT FINAL SUMMARY
+===================
+
+This project can use Qwen2.5-3B-Instruct GGUF 4-bit as a lightweight local chat
+model and OpenRouter-hosted models as flexible API-based alternatives. The
+embedding model has a major impact on the quality of retrieved academic context,
+while the chat model determines how well that context is transformed into a
+useful answer. A strong RAG system should therefore evaluate retrieval quality,
+answer faithfulness, deployment cost, latency, and reproducibility.

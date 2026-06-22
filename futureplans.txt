@@ -36,7 +36,22 @@ availability and citation limits.
 - Show ranking reasons so users understand why a paper was selected.
 - Later add semantic reranking or embeddings if simple ranking is not enough.
 
-4. Paper summaries
+4. Database and search stack
+- Phase 1 should use PostgreSQL as the source of truth.
+- Add pgvector for semantic search and embedding storage.
+- Use PostgreSQL full-text search for small, reliable keyword search across
+  titles, abstracts, authors, topics, and source metadata.
+- Store paper metadata, authors, source records, saved searches, summaries,
+  and embeddings in PostgreSQL.
+- Keep FAISS out of the first version. Add it later only as an acceleration
+  layer if pgvector becomes a proven vector-search bottleneck.
+- Keep Meilisearch out of the first version. Add it later as Phase 2 only if
+  the app needs typo tolerance, search-as-you-type, or a more polished keyword
+  search UX.
+- If Meilisearch is added later, treat it as a secondary index synced from
+  PostgreSQL, not as the source of truth.
+
+5. Paper summaries
 - Generate short, practical summaries for each paper.
 - Summaries should identify the research problem, method or approach, key
   findings, limitations when available, and why the paper is relevant.
@@ -44,13 +59,13 @@ availability and citation limits.
   metadata only, or full available text.
 - Avoid overconfident claims when source text is limited.
 
-5. Research briefs
+6. Research briefs
 - Generate a topic-level research brief from selected papers.
 - Include a topic overview, top relevant papers, common themes, conflicting
   findings, open questions, research gaps, and suggested next papers to read.
 - Cite sources clearly inside the brief.
 
-6. Question answering
+7. Question answering
 - Allow users to ask follow-up questions based on retrieved papers.
 - Use only the current retrieved paper context unless the user asks for a new
   search.
@@ -58,7 +73,7 @@ availability and citation limits.
 - Say when the available sources are insufficient.
 - Prefer cautious, grounded answers over broad unsupported claims.
 
-7. English and Indonesian support
+8. English and Indonesian support
 - Add two separate controls instead of one toggle that does everything:
   interface language and search language.
 - Interface language options: English and Indonesian.
@@ -75,7 +90,7 @@ availability and citation limits.
 - If a user searches in Indonesian, support bilingual query expansion. For
   example, "evaluasi RAG" can search both "evaluasi RAG" and "RAG evaluation".
 
-8. Future OCR support
+9. Future OCR support
 - Keep OCR as a later optional feature.
 - Possible use cases: screenshots, scanned paper pages, image-based PDFs, and
   extracting text from visual documents.
@@ -85,11 +100,14 @@ availability and citation limits.
 Recommended implementation order
 1. Strengthen the existing paper search endpoint.
 2. Add access status and legal open-version discovery.
-3. Improve ranking explanations.
-4. Add summary_basis and better abstract-based summaries.
-5. Add Indonesian interface/output support.
-6. Add search language filtering and bilingual query expansion.
-7. Add research brief generation with citations.
-8. Add question answering over retrieved papers.
-9. Add more academic sources.
-10. Add OCR only after the core research workflow is stable.
+3. Add PostgreSQL as the application database.
+4. Add pgvector for paper embeddings and semantic search.
+5. Add PostgreSQL full-text search for keyword search.
+6. Improve ranking explanations.
+7. Add summary_basis and better abstract-based summaries.
+8. Add Indonesian interface/output support.
+9. Add search language filtering and bilingual query expansion.
+10. Add research brief generation with citations.
+11. Add question answering over retrieved papers.
+12. Add more academic sources.
+13. Add OCR only after the core research workflow is stable.
