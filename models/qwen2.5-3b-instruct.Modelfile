@@ -1,0 +1,2 @@
+FROM /Users/agusman/Downloads/qwen2.5-3b-instruct-q6_k.gguf
+PARAMETER num_ctx 8192

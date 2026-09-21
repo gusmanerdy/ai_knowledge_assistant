@@ -1,0 +1,281 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "8a8c4a4a8e4687b8bdc076542d5ed7df3e9aee97",
+  "generatedAt": "2026-08-12T06:57:05.020Z",
+  "files": {
+    "app/embedding.py": {
+      "filePath": "app/embedding.py",
+      "contentHash": "2b9e099cc0cdbb5eb92f4cd2eb42dfb387f4b80c474c1048835ddcb7756a946d",
+      "functions": [
+        {
+          "name": "explain_ranking",
+          "params": [
+            "paper"
+          ],
+          "returnType": "list[str]",
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        }
+      ],
+      "exports": [
+        "explain_ranking"
+      ],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "app/loader.py": {
+      "filePath": "app/loader.py",
+      "contentHash": "2a62818336f0716dd44b3c6bd48fe6be8f0bb7c99f048e6889268f062af585d0",
+      "functions": [
+        {
+          "name": "_authors_from_semantic_scholar",
+          "params": [
+            "paper"
+          ],
+          "returnType": "list[str]",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_authors_from_openalex",
+          "params": [
+            "work"
+          ],
+          "returnType": "list[str]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_openalex_abstract",
+          "params": [
+            "work"
+          ],
+          "returnType": "str | None",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "_normalize_semantic_scholar",
+          "params": [
+            "paper"
+          ],
+          "returnType": "dict[str, Any]",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_normalize_openalex",
+          "params": [
+            "work"
+          ],
+          "returnType": "dict[str, Any]",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "search_semantic_scholar",
+          "params": [
+            "query",
+            "limit",
+            "year_from"
+          ],
+          "returnType": "list[dict[str, Any]]",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "search_openalex",
+          "params": [
+            "query",
+            "limit",
+            "year_from"
+          ],
+          "returnType": "list[dict[str, Any]]",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        },
+        {
+          "source": "httpx",
+          "specifiers": [
+            "httpx"
+          ]
+        }
+      ],
+      "exports": [
+        "_authors_from_semantic_scholar",
+        "_authors_from_openalex",
+        "_openalex_abstract",
+        "_normalize_semantic_scholar",
+        "_normalize_openalex",
+        "search_semantic_scholar",
+        "search_openalex"
+      ],
+      "totalLines": 100,
+      "hasStructuralAnalysis": true
+    },
+    "app/main.py": {
+      "filePath": "app/main.py",
+      "contentHash": "b8e2fee0b1583ee4e95db7bc8d024ec7832563f00781ceafa17662e1f99eb1c1",
+      "functions": [
+        {
+          "name": "health",
+          "params": [],
+          "returnType": "dict[str, str]",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "search_papers",
+          "params": [
+            "request"
+          ],
+          "returnType": "dict[str, object]",
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [
+        {
+          "name": "PaperSearchRequest",
+          "methods": [],
+          "properties": [
+            "query",
+            "limit",
+            "year_from",
+            "sources"
+          ],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "Literal"
+          ]
+        },
+        {
+          "source": "fastapi",
+          "specifiers": [
+            "FastAPI"
+          ]
+        },
+        {
+          "source": "pydantic",
+          "specifiers": [
+            "BaseModel",
+            "Field"
+          ]
+        },
+        {
+          "source": "app.embedding",
+          "specifiers": [
+            "explain_ranking"
+          ]
+        },
+        {
+          "source": "app.rag_pipeline",
+          "specifiers": [
+            "find_research_papers"
+          ]
+        }
+      ],
+      "exports": [
+        "PaperSearchRequest",
+        "health",
+        "search_papers"
+      ],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "app/rag_pipeline.py": {
+      "filePath": "app/rag_pipeline.py",
+      "contentHash": "cd80d49a603410042264f3a6590cd0d295edc1283ad4efa3555f7aa82d9983ab",
+      "functions": [
+        {
+          "name": "_paper_score",
+          "params": [
+            "paper"
+          ],
+          "returnType": "tuple[int, int, int]",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "rank_papers",
+          "params": [
+            "papers",
+            "limit"
+          ],
+          "returnType": "list[dict[str, Any]]",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "summarize_paper_metadata",
+          "params": [
+            "paper"
+          ],
+          "returnType": "dict[str, Any]",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "find_research_papers",
+          "params": [
+            "query",
+            "limit",
+            "year_from",
+            "sources"
+          ],
+          "returnType": "list[dict[str, Any]]",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        },
+        {
+          "source": "app.loader",
+          "specifiers": [
+            "search_openalex",
+            "search_semantic_scholar"
+          ]
+        }
+      ],
+      "exports": [
+        "_paper_score",
+        "rank_papers",
+        "summarize_paper_metadata",
+        "find_research_papers"
+      ],
+      "totalLines": 55,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

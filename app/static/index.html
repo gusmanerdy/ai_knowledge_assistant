@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>AI Knowledge Assistant</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <style type="text/tailwindcss">
+            @theme {
+                --color-ink: #20211d;
+                --color-muted: #68706a;
+                --color-line: #dfe4db;
+                --color-sage: #276b5d;
+                --color-sage-dark: #18473e;
+                --color-sage-soft: #dceee8;
+                --color-amber-note: #b46a1f;
+                --color-paper: #f7f8f4;
+            }
+        </style>
+    </head>
+    <body class="min-h-screen bg-paper text-ink antialiased [background-image:linear-gradient(180deg,rgba(255,255,255,.88),rgba(247,248,244,.96)),repeating-linear-gradient(90deg,rgba(39,107,93,.07)_0_1px,transparent_1px_72px)]">
+        <div class="mx-auto w-[min(1180px,calc(100vw-32px))] py-6 max-sm:w-[min(1180px,calc(100vw-20px))] max-sm:py-4">
+            <header class="flex items-center justify-between gap-6 pb-7 max-md:flex-col max-md:items-start">
+                <div>
+                    <p class="text-xs font-bold uppercase text-sage">Ruang riset</p>
+                    <h1 class="text-[1.35rem] font-bold leading-tight">AI Knowledge Assistant</h1>
+                </div>
+                <nav class="flex items-center gap-1 max-sm:w-full max-sm:overflow-x-auto" aria-label="Primary navigation">
+                    <a class="inline-flex min-h-10 items-center rounded-md bg-sage-soft px-3 text-sm font-medium text-sage-dark no-underline" href="/" aria-current="page">Riset</a>
+                    <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/docs">API Docs</a>
+                </nav>
+            </header>
+
+            <main>
+                <section class="grid grid-cols-[minmax(0,.8fr)_minmax(420px,1.2fr)] items-center gap-8 border-y border-line py-10 max-lg:grid-cols-1 max-lg:py-7" aria-labelledby="search-title">
+                    <div class="flex min-h-full flex-col justify-center">
+                        <p class="text-xs font-bold uppercase text-sage">Tanya literatur</p>
+                        <h2 id="search-title" class="my-3 max-w-2xl text-[clamp(2rem,3vw,3rem)] font-extrabold leading-tight">Apa yang ingin Anda ketahui?</h2>
+                        <p class="max-w-xl text-base leading-7 text-muted">
+                            Tanyakan topik riset Anda. Jawaban disusun dari abstrak paper yang ditemukan, lengkap dengan sumbernya.
+                        </p>
+                    </div>
+
+                    <form id="search-form" class="flex flex-col gap-5 rounded-lg border border-line bg-white p-6 shadow-[0_10px_30px_rgba(36,43,38,.06)]">
+                        <fieldset>
+                            <legend class="mb-2 text-sm font-bold text-muted">Model</legend>
+                            <div class="inline-flex rounded-md border border-line bg-paper p-1">
+                                <label class="cursor-pointer">
+                                    <input class="peer sr-only" type="radio" name="provider" value="openrouter" checked />
+                                    <span class="inline-flex min-h-9 items-center rounded px-3 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">OpenRouter</span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input class="peer sr-only" type="radio" name="provider" value="local" />
+                                    <span class="inline-flex min-h-9 items-center rounded px-3 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">Lokal (Ollama)</span>
+                                </label>
+                            </div>
+                            <p id="provider-note" class="mt-2 text-xs leading-5 text-muted">Model cloud melalui OpenRouter.</p>
+                        </fieldset>
+
+                        <label class="text-sm font-bold text-muted" for="query">Pertanyaan riset</label>
+                        <div class="flex flex-col gap-3">
+                            <textarea
+                                class="min-h-28 w-full resize-y rounded-md border border-line bg-white px-3 py-3 text-base outline-none focus:border-sage focus:ring-4 focus:ring-sage/15"
+                                id="query"
+                                name="query"
+                                minlength="3"
+                                maxlength="2000"
+                                placeholder="Contoh: Bagaimana cara mengevaluasi kualitas jawaban sistem RAG?"
+                                required
+                            >Bagaimana cara mengevaluasi kualitas jawaban sistem RAG?</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-[.6fr_.7fr_1.3fr] gap-3 max-lg:grid-cols-1">
+                            <label class="flex flex-col gap-2 text-sm font-bold text-muted">
+                                Jumlah paper
+                                <input class="min-h-11 w-full rounded-md border border-line bg-white px-3 text-base text-ink outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="limit" name="limit" type="number" value="8" min="1" max="12" />
+                            </label>
+                            <label class="flex flex-col gap-2 text-sm font-bold text-muted">
+                                Sejak tahun
+                                <input class="min-h-11 w-full rounded-md border border-line bg-white px-3 text-base text-ink outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="year-from" name="year_from" type="number" value="2020" min="1900" max="2100" />
+                            </label>
+                            <fieldset class="flex min-w-0 items-center gap-4 rounded-md border border-line px-3 pb-3 pt-2 max-sm:flex-col max-sm:items-start">
+                                <legend class="px-1 text-sm font-bold text-muted">Sumber</legend>
+                                <label class="flex flex-row items-center gap-2 text-sm font-semibold text-muted">
+                                    <input type="checkbox" name="sources" value="semantic_scholar" checked />
+                                    Semantic Scholar
+                                </label>
+                                <label class="flex flex-row items-center gap-2 text-sm font-semibold text-muted">
+                                    <input type="checkbox" name="sources" value="openalex" checked />
+                                    OpenAlex
+                                </label>
+                            </fieldset>
+                        </div>
+                        <button class="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md bg-sage px-5 font-bold text-white hover:bg-sage-dark disabled:cursor-wait disabled:opacity-70" type="submit">Tanya</button>
+                    </form>
+                </section>
+
+                <section id="answer-section" class="border-b border-line py-7" aria-labelledby="answer-title" aria-live="polite" hidden>
+                    <div class="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+                        <h2 id="answer-title" class="text-2xl font-bold">Jawaban</h2>
+                        <p id="answer-meta" class="text-sm text-muted"></p>
+                    </div>
+                    <div id="answer" class="max-w-4xl space-y-4 text-[15px] leading-7"></div>
+                    <p id="search-terms" class="mt-5 text-sm text-muted"></p>
+                </section>
+
+                <section class="pt-7" aria-live="polite">
+                    <div class="mb-4 flex items-end justify-between gap-5 max-md:flex-col max-md:items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase text-sage">Referensi</p>
+                            <h2 class="text-2xl font-bold">Paper ditemukan</h2>
+                        </div>
+                        <p class="text-muted" id="result-count">Ajukan pertanyaan untuk memulai.</p>
+                    </div>
+                    <div id="message" class="mb-4 rounded-md border border-amber-note/35 bg-orange-50 px-4 py-3 text-amber-900" hidden></div>
+                    <div id="results" class="grid gap-3"></div>
+                </section>
+            </main>
+        </div>
+
+        <script src="/static/app.js?v=2" defer></script>
+    </body>
+</html>

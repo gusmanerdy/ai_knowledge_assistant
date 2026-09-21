@@ -92,16 +92,14 @@ Answers should:
 - Mention when the retrieved sources are insufficient
 - Prefer cautious summaries over overconfident conclusions
 
-## Suggested API Design
+## API
 
-Planned FastAPI endpoints:
+Available FastAPI endpoints:
 
 ```text
 GET  /health             Check service status
 POST /papers/search      Search for papers by topic
-POST /papers/summarize   Summarize selected papers
-POST /research/brief     Generate a topic research brief
-POST /ask                Answer a question using retrieved paper context
+POST /research/query     Answer a question with cited paper abstracts via OpenRouter or Ollama
 ```
 
 ## Suggested Development Roadmap
@@ -138,6 +136,16 @@ PostgreSQL should store paper metadata, authors, sources, saved searches, summar
 
 Meilisearch can be considered later as Phase 2 if the app needs a more polished search experience with typo tolerance, search-as-you-type, or dedicated keyword ranking. It should be treated as a secondary index synced from PostgreSQL, not as the source of truth.
 
+The initial database design lives in `docs/database-design.md`. The first PostgreSQL + pgvector migration is in `db/migrations/001_init_pgvector.sql`, with a sample hybrid keyword/vector query in `db/queries/hybrid_paper_search.sql`.
+
+For local development, start PostgreSQL with:
+
+```bash
+docker compose up -d postgres
+```
+
+This uses the `pgvector/pgvector:pg16` image and automatically applies migrations mounted from `db/migrations` on first database initialization.
+
 ## Installation
 
 Clone the repository:
@@ -162,13 +170,32 @@ pip install -r requirements.txt
 
 ## Running the Project
 
-The application entry point is still being developed.
+Create an OpenRouter API key, then open `.env` in the project root and paste it after the equals sign:
 
-Once the FastAPI app is added, the expected command will be:
+```dotenv
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_MODEL=google/gemini-3.8-flash
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen2.5-3b-instruct-q6k
+```
+
+The `.env` file is ignored by Git. The default answer model is `google/gemini-3.8-flash`. To use another OpenRouter model that supports structured JSON output, change `OPENROUTER_MODEL` in the same file.
+
+Start the application:
 
 ```bash
 uvicorn app.main:app --reload
 ```
+
+Open `http://127.0.0.1:8000/`. The research form accepts a question in Indonesian or English, searches Semantic Scholar and OpenAlex with the original question and English research terms, and returns an answer in the question's language with links to the cited papers. Select OpenRouter for the cloud model or Local (Ollama) for a model running on this Mac.
+
+For local inference with the existing GGUF file, import it into Ollama:
+
+```bash
+ollama create qwen2.5-3b-instruct-q6k -f models/qwen2.5-3b-instruct.Modelfile
+```
+
+The current answer uses titles and abstracts returned by the academic APIs. It does not read full papers or search stored pgvector embeddings yet. The PostgreSQL migrations can be applied separately; they are not required for this OpenRouter flow.
 
 ## Future OCR Feature
 

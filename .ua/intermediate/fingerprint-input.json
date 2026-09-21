@@ -1,0 +1,10 @@
+{
+  "projectRoot": "/Users/agusman/Documents/AI/ai_knowledge_ass",
+  "sourceFilePaths": [
+    "app/embedding.py",
+    "app/loader.py",
+    "app/main.py",
+    "app/rag_pipeline.py"
+  ],
+  "gitCommitHash": "8a8c4a4a8e4687b8bdc076542d5ed7df3e9aee97"
+}

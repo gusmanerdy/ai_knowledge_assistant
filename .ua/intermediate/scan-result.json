@@ -1,0 +1,75 @@
+{
+  "scriptCompleted": true,
+  "contentDigest": "6b176398d497e507d800144a1aa483125200e3119961c194192f5a493017d45b",
+  "files": [
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 188,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "app/embedding.py",
+      "language": "python",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/loader.py",
+      "language": "python",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/main.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/rag_pipeline.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "docker_desktop_release_notes.txt",
+      "language": "txt",
+      "sizeLines": 132,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "futureplans.txt",
+      "language": "txt",
+      "sizeLines": 113,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "rag_model_embedding_summary.txt",
+      "language": "txt",
+      "sizeLines": 347,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "sizeLines": 4,
+      "fileCategory": "docs"
+    }
+  ],
+  "totalFiles": 9,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "small",
+  "stats": {
+    "filesScanned": 9,
+    "byCategory": {
+      "docs": 5,
+      "code": 4
+    },
+    "byLanguage": {
+      "markdown": 1,
+      "python": 4,
+      "txt": 4
+    }
+  }
+}
