@@ -7,13 +7,15 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 
-from app.model_client import ModelError
+from backend.app.clients.model_client import ModelError
+from backend.app.core.paths import PROJECT_ROOT
 
 
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 DEFAULT_LOCAL_MODEL = "qwen2.5-3b-instruct-q6k"
+DEFAULT_NUM_CTX = 4096
 
-load_dotenv()
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 class OllamaClient:
@@ -21,6 +23,8 @@ class OllamaClient:
         base_url = os.getenv("OLLAMA_BASE_URL", DEFAULT_OLLAMA_URL).strip()
         self.base_url = base_url.rstrip("/") or DEFAULT_OLLAMA_URL
         self.model = os.getenv("OLLAMA_MODEL", DEFAULT_LOCAL_MODEL).strip() or DEFAULT_LOCAL_MODEL
+        self.num_ctx = int(os.getenv("OLLAMA_NUM_CTX", str(DEFAULT_NUM_CTX)))
+        self.keep_alive = os.getenv("OLLAMA_KEEP_ALIVE", "30m").strip() or "30m"
 
     async def complete_json(
         self,
@@ -28,6 +32,7 @@ class OllamaClient:
         schema_name: str,
         schema: dict[str, Any],
         max_tokens: int,
+        temperature: float = 0,
     ) -> dict[str, Any]:
         schema_instruction = (
             f"Return only JSON for {schema_name} matching this schema: "
@@ -44,8 +49,12 @@ class OllamaClient:
             "messages": prepared_messages,
             "format": schema,
             "stream": False,
-            "options": {"temperature": 0, "num_predict": max_tokens},
-            "keep_alive": "10m",
+            "options": {
+                "temperature": temperature,
+                "num_ctx": self.num_ctx,
+                "num_predict": max_tokens,
+            },
+            "keep_alive": self.keep_alive,
         }
 
         parse_error: Exception | None = None

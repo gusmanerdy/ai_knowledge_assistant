@@ -1,16 +1,23 @@
 # Python cache
 __pycache__/
 *.pyc
+.pytest_cache/
 
-#virtual environment
+# Virtual environments
+.venv/
 venv/
 
-#Environment variables
+# Environment variables
 .env
 
-#Mac_system File
+# macOS files
 .DS_Store
+
+# Runtime admin settings
+storage/model_settings.json
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
 
+# Frontend dependencies
+node_modules/

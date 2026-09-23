@@ -4,7 +4,7 @@ import asyncio
 import re
 from typing import Any
 
-from app.loader import search_openalex, search_semantic_scholar
+from backend.app.services.scholarly_sources import search_openalex, search_semantic_scholar
 
 
 def _paper_key(paper: dict[str, Any]) -> str:

@@ -16,4 +16,5 @@ class ModelClient(Protocol):
         schema_name: str,
         schema: dict[str, Any],
         max_tokens: int,
+        temperature: float = 0,
     ) -> dict[str, Any]: ...

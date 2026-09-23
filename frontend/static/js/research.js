@@ -6,7 +6,12 @@ const answerSection = document.querySelector("#answer-section");
 const answer = document.querySelector("#answer");
 const answerMeta = document.querySelector("#answer-meta");
 const searchTerms = document.querySelector("#search-terms");
-const providerNote = document.querySelector("#provider-note");
+const modelProfile = document.querySelector("#model-profile");
+const modelStatus = document.querySelector("#model-status");
+const modelLatency = document.querySelector("#model-latency");
+const modelEvidence = document.querySelector("#model-evidence");
+
+let activeProvider = "openrouter";
 
 function applyClasses(element, classes) {
     element.className = classes;
@@ -106,14 +111,32 @@ function selectedSources() {
         .map((input) => input.value);
 }
 
-form.addEventListener("change", (event) => {
-    if (event.target.name !== "provider") {
-        return;
+function setDashboard({ status, latency, evidence } = {}) {
+    if (status) {
+        modelStatus.textContent = status;
     }
-    providerNote.textContent = event.target.value === "local"
-        ? "Model berjalan melalui Ollama di perangkat ini."
-        : "Model cloud melalui OpenRouter.";
-});
+    if (latency) {
+        modelLatency.textContent = latency;
+    }
+    if (evidence) {
+        modelEvidence.textContent = evidence;
+    }
+}
+
+async function loadModelProfile() {
+    try {
+        const response = await fetch("/model-profile");
+        if (!response.ok) {
+            throw new Error();
+        }
+        const settings = await response.json();
+        activeProvider = settings.provider;
+        const provider = settings.provider === "local" ? "Lokal" : "OpenRouter";
+        modelProfile.textContent = `${provider} | ${settings.intent} | ${settings.max_tokens} token`;
+    } catch {
+        modelProfile.textContent = "Konfigurasi model tidak dapat dimuat";
+    }
+}
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -128,7 +151,6 @@ form.addEventListener("submit", async (event) => {
         query: document.querySelector("#query").value.trim(),
         limit: Number(document.querySelector("#limit").value || 8),
         sources,
-        provider: form.elements.provider.value,
     };
 
     const yearFrom = document.querySelector("#year-from").value;
@@ -142,7 +164,16 @@ form.addEventListener("submit", async (event) => {
     answer.replaceChildren();
     results.replaceChildren();
     resultCount.textContent = "Mencari paper dan menyusun jawaban...";
+    setDashboard({ status: "Memproses", latency: "0 detik", evidence: "Mengumpulkan" });
     setMessage("", false);
+    const startedAt = Date.now();
+    const progressTimer = window.setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        modelLatency.textContent = `${elapsed} detik`;
+        resultCount.textContent = activeProvider === "local"
+            ? `Model lokal sedang menyusun jawaban... ${elapsed} detik`
+            : `Mencari paper dan menyusun jawaban... ${elapsed} detik`;
+    }, 1000);
 
     try {
         const response = await fetch("/research/query", {
@@ -158,6 +189,7 @@ form.addEventListener("submit", async (event) => {
 
         const data = await response.json();
         const papers = Array.isArray(data.papers) ? data.papers : [];
+        const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
 
         resultCount.textContent = `${papers.length} paper ditemukan`;
         results.replaceChildren(...papers.map(renderPaper));
@@ -167,18 +199,32 @@ form.addEventListener("submit", async (event) => {
             const language = { id: "Bahasa Indonesia", en: "English" }[data.answer_language]
                 || data.answer_language;
             const provider = data.provider === "local" ? "Lokal" : "OpenRouter";
-            answerMeta.textContent = `${language} | ${provider} | ${data.model}`;
+            const intent = data.model_settings?.intent || "Riset berbasis bukti";
+            answerMeta.textContent = `${language} | ${provider} | ${data.model} | ${intent}`;
+            const diagnostics = data.diagnostics || {};
+            const cited = Number(diagnostics.cited_papers || 0);
+            const abstracts = Number(diagnostics.papers_with_abstract || 0);
+            setDashboard({
+                status: "Selesai",
+                latency: `${elapsed} detik`,
+                evidence: `${cited}/${papers.length} paper dikutip, ${abstracts} abstrak`,
+            });
             const extraQuery = (data.search_queries || []).slice(1).join("; ");
             searchTerms.textContent = extraQuery ? `Istilah pencarian tambahan: ${extraQuery}` : "";
             answerSection.hidden = false;
         } else {
+            setDashboard({ status: "Tidak ada hasil", latency: `${elapsed} detik`, evidence: "0 paper" });
             setMessage("Belum ada paper yang cocok. Coba pertanyaan lebih luas atau ubah batas tahun.");
         }
     } catch (error) {
         resultCount.textContent = "Permintaan gagal";
+        setDashboard({ status: "Gagal", evidence: "Periksa pesan" });
         setMessage(error.message);
     } finally {
+        window.clearInterval(progressTimer);
         submitButton.disabled = false;
         submitButton.textContent = "Tanya";
     }
 });
+
+loadModelProfile();

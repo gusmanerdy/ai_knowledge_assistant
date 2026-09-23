@@ -1,0 +1,16 @@
+@import "tailwindcss" source(none);
+
+@source "../../pages";
+@source "../js";
+
+@theme {
+    --color-ink: #20211d;
+    --color-muted: #68706a;
+    --color-line: #dfe4db;
+    --color-sage: #276b5d;
+    --color-sage-dark: #18473e;
+    --color-sage-soft: #dceee8;
+    --color-amber-note: #b46a1f;
+    --color-paper: #f7f8f4;
+    --color-danger: #a33b32;
+}

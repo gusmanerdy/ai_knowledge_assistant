@@ -4,31 +4,27 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>AI Knowledge Assistant</title>
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <style type="text/tailwindcss">
-            @theme {
-                --color-ink: #20211d;
-                --color-muted: #68706a;
-                --color-line: #dfe4db;
-                --color-sage: #276b5d;
-                --color-sage-dark: #18473e;
-                --color-sage-soft: #dceee8;
-                --color-amber-note: #b46a1f;
-                --color-paper: #f7f8f4;
-            }
-        </style>
+        <link rel="icon" href="/static/images/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" type="image/png" href="/static/images/favicon.png?v=2" />
+        <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png?v=2" />
+        <link rel="stylesheet" href="/static/css/tailwind.css?v=2" />
     </head>
-    <body class="min-h-screen bg-paper text-ink antialiased [background-image:linear-gradient(180deg,rgba(255,255,255,.88),rgba(247,248,244,.96)),repeating-linear-gradient(90deg,rgba(39,107,93,.07)_0_1px,transparent_1px_72px)]">
+    <body class="min-h-screen bg-paper text-ink antialiased bg-[linear-gradient(180deg,rgba(255,255,255,.88),rgba(247,248,244,.96)),repeating-linear-gradient(90deg,rgba(39,107,93,.07)_0_1px,transparent_1px_72px)]">
         <div class="mx-auto w-[min(1180px,calc(100vw-32px))] py-6 max-sm:w-[min(1180px,calc(100vw-20px))] max-sm:py-4">
             <header class="flex items-center justify-between gap-6 pb-7 max-md:flex-col max-md:items-start">
                 <div>
                     <p class="text-xs font-bold uppercase text-sage">Ruang riset</p>
                     <h1 class="text-[1.35rem] font-bold leading-tight">AI Knowledge Assistant</h1>
                 </div>
-                <nav class="flex items-center gap-1 max-sm:w-full max-sm:overflow-x-auto" aria-label="Primary navigation">
-                    <a class="inline-flex min-h-10 items-center rounded-md bg-sage-soft px-3 text-sm font-medium text-sage-dark no-underline" href="/" aria-current="page">Riset</a>
-                    <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/docs">API Docs</a>
-                </nav>
+                <div class="flex items-center gap-3 max-sm:w-full max-sm:flex-wrap">
+                    <nav class="flex items-center gap-1 max-sm:overflow-x-auto" aria-label="Primary navigation">
+                        <a class="inline-flex min-h-10 items-center rounded-md bg-sage-soft px-3 text-sm font-medium text-sage-dark no-underline" href="/research" aria-current="page">Riset</a>
+                        <a data-role="admin" hidden class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/admin">Admin</a>
+                        <a data-role="admin" hidden class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/docs">API Docs</a>
+                    </nav>
+                    <span data-user-name class="text-sm font-semibold text-muted"></span>
+                    <button data-logout class="min-h-10 cursor-pointer rounded-md border border-line px-3 text-sm font-semibold text-muted hover:border-sage hover:text-sage" type="button">Keluar</button>
+                </div>
             </header>
 
             <main>
@@ -42,20 +38,29 @@
                     </div>
 
                     <form id="search-form" class="flex flex-col gap-5 rounded-lg border border-line bg-white p-6 shadow-[0_10px_30px_rgba(36,43,38,.06)]">
-                        <fieldset>
-                            <legend class="mb-2 text-sm font-bold text-muted">Model</legend>
-                            <div class="inline-flex rounded-md border border-line bg-paper p-1">
-                                <label class="cursor-pointer">
-                                    <input class="peer sr-only" type="radio" name="provider" value="openrouter" checked />
-                                    <span class="inline-flex min-h-9 items-center rounded px-3 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">OpenRouter</span>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input class="peer sr-only" type="radio" name="provider" value="local" />
-                                    <span class="inline-flex min-h-9 items-center rounded px-3 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">Lokal (Ollama)</span>
-                                </label>
+                        <div class="rounded-md border border-line bg-paper p-4" aria-live="polite">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold uppercase text-sage">Model aktif</p>
+                                    <p id="model-profile" class="mt-1 text-sm font-semibold text-ink">Memuat konfigurasi...</p>
+                                </div>
+                                <a class="text-sm font-semibold text-sage underline underline-offset-4" href="/admin">Kelola</a>
                             </div>
-                            <p id="provider-note" class="mt-2 text-xs leading-5 text-muted">Model cloud melalui OpenRouter.</p>
-                        </fieldset>
+                            <div class="mt-4 grid grid-cols-3 gap-2 max-sm:grid-cols-1">
+                                <div class="rounded-md border border-line bg-white px-3 py-2">
+                                    <p class="text-xs font-bold uppercase text-muted">Status</p>
+                                    <p id="model-status" class="mt-1 text-sm font-bold text-sage-dark">Siap</p>
+                                </div>
+                                <div class="rounded-md border border-line bg-white px-3 py-2">
+                                    <p class="text-xs font-bold uppercase text-muted">Durasi</p>
+                                    <p id="model-latency" class="mt-1 text-sm font-bold text-sage-dark">-</p>
+                                </div>
+                                <div class="rounded-md border border-line bg-white px-3 py-2">
+                                    <p class="text-xs font-bold uppercase text-muted">Evidence</p>
+                                    <p id="model-evidence" class="mt-1 text-sm font-bold text-sage-dark">Belum ada</p>
+                                </div>
+                            </div>
+                        </div>
 
                         <label class="text-sm font-bold text-muted" for="query">Pertanyaan riset</label>
                         <div class="flex flex-col gap-3">
@@ -118,6 +123,7 @@
             </main>
         </div>
 
-        <script src="/static/app.js?v=2" defer></script>
+        <script src="/static/js/session.js?v=1" defer></script>
+        <script src="/static/js/research.js?v=1" defer></script>
     </body>
 </html>

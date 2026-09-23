@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Admin Model | AI Knowledge Assistant</title>
+        <link rel="icon" href="/static/images/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" type="image/png" href="/static/images/favicon.png?v=2" />
+        <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png?v=2" />
+        <link rel="stylesheet" href="/static/css/tailwind.css?v=2" />
+    </head>
+    <body class="min-h-screen bg-paper text-ink antialiased">
+        <div class="mx-auto w-[min(1180px,calc(100vw-32px))] py-6 max-sm:w-[min(1180px,calc(100vw-20px))] max-sm:py-4">
+            <header class="flex items-center justify-between gap-6 border-b border-line pb-6 max-md:flex-col max-md:items-start">
+                <div>
+                    <p class="text-xs font-bold uppercase text-sage">Kontrol internal</p>
+                    <h1 class="text-[1.35rem] font-bold leading-tight">Admin Model</h1>
+                </div>
+                <div class="flex items-center gap-3 max-sm:w-full max-sm:flex-wrap">
+                    <nav class="flex items-center gap-1 max-sm:overflow-x-auto" aria-label="Primary navigation">
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/research">Riset</a>
+                        <a class="inline-flex min-h-10 items-center rounded-md bg-sage-soft px-3 text-sm font-medium text-sage-dark no-underline" href="/admin" aria-current="page">Admin</a>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted no-underline hover:bg-sage-soft hover:text-sage-dark" href="/docs">API Docs</a>
+                    </nav>
+                    <span data-user-name class="text-sm font-semibold text-muted"></span>
+                    <button data-logout class="min-h-10 cursor-pointer rounded-md border border-line px-3 text-sm font-semibold text-muted hover:border-sage hover:text-sage" type="button">Keluar</button>
+                </div>
+            </header>
+
+            <main class="py-8">
+                <div class="mb-7 flex items-end justify-between gap-5 max-md:flex-col max-md:items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase text-sage">Konfigurasi aktif</p>
+                        <h2 class="mt-2 text-3xl font-extrabold leading-tight">Atur cara model menjawab</h2>
+                        <p class="mt-2 max-w-2xl leading-7 text-muted">Perubahan yang disimpan langsung dipakai untuk pertanyaan riset berikutnya.</p>
+                    </div>
+                    <div id="save-state" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-muted" aria-live="polite">Memuat...</div>
+                </div>
+
+                <div class="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-6 max-lg:grid-cols-1">
+                    <form id="settings-form" class="rounded-lg border border-line bg-white p-6 shadow-[0_10px_30px_rgba(36,43,38,.05)] max-sm:p-4">
+                        <section class="border-b border-line pb-6" aria-labelledby="engine-title">
+                            <div class="mb-4">
+                                <h3 id="engine-title" class="text-lg font-bold">Mesin dan perilaku</h3>
+                                <p class="mt-1 text-sm text-muted">Tentukan mesin yang digunakan dan tujuan utama jawabannya.</p>
+                            </div>
+
+                            <fieldset>
+                                <legend class="mb-2 text-sm font-bold text-muted">Provider</legend>
+                                <div class="inline-flex rounded-md border border-line bg-paper p-1">
+                                    <label class="cursor-pointer">
+                                        <input class="peer sr-only" type="radio" name="provider" value="openrouter" />
+                                        <span class="inline-flex min-h-10 items-center rounded px-4 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">OpenRouter</span>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input class="peer sr-only" type="radio" name="provider" value="local" />
+                                        <span class="inline-flex min-h-10 items-center rounded px-4 text-sm font-semibold text-muted peer-checked:bg-sage peer-checked:text-white">Lokal</span>
+                                    </label>
+                                </div>
+                            </fieldset>
+
+                            <label class="mt-5 block text-sm font-bold text-muted" for="intent">Intent utama</label>
+                            <input class="mt-2 min-h-11 w-full rounded-md border border-line px-3 text-base outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="intent" name="intent" minlength="3" maxlength="160" required />
+                            <div class="mt-1 flex justify-between gap-3 text-xs text-muted">
+                                <span>Tujuan yang selalu diprioritaskan model.</span>
+                                <span id="intent-count">0/160</span>
+                            </div>
+                        </section>
+
+                        <section class="border-b border-line py-6" aria-labelledby="response-title">
+                            <div class="mb-4">
+                                <h3 id="response-title" class="text-lg font-bold">Aturan respons</h3>
+                                <p class="mt-1 text-sm text-muted">Instruksi ini ditambahkan ke prompt sistem pada setiap jawaban.</p>
+                            </div>
+
+                            <label class="block text-sm font-bold text-muted" for="response-instruction">Instruksi respons</label>
+                            <textarea class="mt-2 min-h-36 w-full resize-y rounded-md border border-line px-3 py-3 text-base leading-6 outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="response-instruction" name="response_instruction" minlength="10" maxlength="2000" required></textarea>
+                            <div class="mt-1 flex justify-between gap-3 text-xs text-muted">
+                                <span>Contoh: gunakan bahasa sederhana dan selalu sebutkan keterbatasan bukti.</span>
+                                <span id="instruction-count">0/2000</span>
+                            </div>
+
+                            <label class="mt-5 block text-sm font-bold text-muted" for="evidence-policy">Kebijakan bukti</label>
+                            <select class="mt-2 min-h-11 w-full rounded-md border border-line bg-white px-3 text-base outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="evidence-policy" name="evidence_policy">
+                                <option value="strict">Ketat — hanya klaim yang didukung abstrak</option>
+                                <option value="balanced">Seimbang — izinkan interpretasi berlabel</option>
+                                <option value="exploratory">Eksploratif — izinkan hipotesis berlabel</option>
+                            </select>
+                        </section>
+
+                        <section class="py-6" aria-labelledby="generation-title">
+                            <div class="mb-4">
+                                <h3 id="generation-title" class="text-lg font-bold">Parameter generasi</h3>
+                                <p class="mt-1 text-sm text-muted">Kontrol panjang dan variasi jawaban model.</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
+                                <label class="block text-sm font-bold text-muted" for="max-tokens">
+                                    Maksimum token
+                                    <input class="mt-2 min-h-11 w-full rounded-md border border-line px-3 text-base text-ink outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="max-tokens" name="max_tokens" type="number" min="128" max="4096" step="64" required />
+                                    <span class="mt-1 block text-xs font-normal text-muted">Batas keluaran untuk satu jawaban.</span>
+                                </label>
+                                <label class="block text-sm font-bold text-muted" for="paragraph-count">
+                                    Jumlah paragraf
+                                    <input class="mt-2 min-h-11 w-full rounded-md border border-line px-3 text-base text-ink outline-none focus:border-sage focus:ring-4 focus:ring-sage/15" id="paragraph-count" name="paragraph_count" type="number" min="1" max="5" required />
+                                    <span class="mt-1 block text-xs font-normal text-muted">Struktur jawaban yang diminta.</span>
+                                </label>
+                            </div>
+
+                            <label class="mt-5 flex items-center justify-between gap-4 text-sm font-bold text-muted" for="temperature">
+                                <span>Temperature</span>
+                                <output id="temperature-value" class="min-w-12 rounded bg-sage-soft px-2 py-1 text-center text-sage-dark">0.2</output>
+                            </label>
+                            <input class="mt-3 w-full accent-sage" id="temperature" name="temperature" type="range" min="0" max="1" step="0.1" />
+                            <div class="mt-1 flex justify-between text-xs text-muted"><span>Lebih konsisten</span><span>Lebih variatif</span></div>
+                        </section>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+                            <button id="reset-button" class="min-h-11 cursor-pointer rounded-md border border-line px-4 text-sm font-bold text-muted hover:border-danger hover:text-danger" type="button">Kembalikan default</button>
+                            <button class="min-h-11 cursor-pointer rounded-md bg-sage px-5 text-sm font-bold text-white hover:bg-sage-dark disabled:cursor-wait disabled:opacity-65" type="submit">Simpan konfigurasi</button>
+                        </div>
+                    </form>
+
+                    <aside class="sticky top-6 rounded-lg border border-line bg-white p-5 max-lg:static" aria-labelledby="summary-title">
+                        <p class="text-xs font-bold uppercase text-sage">Pratinjau konfigurasi</p>
+                        <h3 id="summary-title" class="mt-2 text-lg font-bold">Profil jawaban aktif</h3>
+                        <dl class="mt-5 divide-y divide-line text-sm">
+                            <div class="py-3">
+                                <dt class="text-muted">Provider</dt>
+                                <dd id="summary-provider" class="mt-1 font-bold">-</dd>
+                            </div>
+                            <div class="py-3">
+                                <dt class="text-muted">Intent</dt>
+                                <dd id="summary-intent" class="mt-1 wrap-break-word font-bold">-</dd>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 py-3">
+                                <div><dt class="text-muted">Token</dt><dd id="summary-tokens" class="mt-1 font-bold">-</dd></div>
+                                <div><dt class="text-muted">Paragraf</dt><dd id="summary-paragraphs" class="mt-1 font-bold">-</dd></div>
+                            </div>
+                            <div class="py-3">
+                                <dt class="text-muted">Kebijakan bukti</dt>
+                                <dd id="summary-evidence" class="mt-1 font-bold">-</dd>
+                            </div>
+                        </dl>
+                        <p class="mt-4 rounded-md bg-sage-soft px-3 py-3 text-sm leading-6 text-sage-dark">Konfigurasi berlaku global untuk semua pengguna halaman riset.</p>
+                    </aside>
+                </div>
+            </main>
+        </div>
+
+        <script src="/static/js/session.js?v=1" defer></script>
+        <script src="/static/js/admin.js?v=1" defer></script>
+    </body>
+</html>

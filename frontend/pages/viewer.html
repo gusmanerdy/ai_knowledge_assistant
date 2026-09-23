@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Akun | AI Knowledge Assistant</title>
+        <link rel="icon" href="/static/images/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" type="image/png" href="/static/images/favicon.png?v=2" />
+        <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png?v=2" />
+        <link rel="stylesheet" href="/static/css/tailwind.css?v=2" />
+    </head>
+    <body class="min-h-screen bg-paper text-ink antialiased">
+        <div class="mx-auto w-[min(980px,calc(100vw-32px))] py-6 max-sm:w-[calc(100vw-20px)]">
+            <header class="flex items-center justify-between gap-5 border-b border-line pb-6 max-sm:flex-wrap">
+                <div>
+                    <p class="text-xs font-bold uppercase text-sage">Ruang riset</p>
+                    <h1 class="text-xl font-bold">AI Knowledge Assistant</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span data-user-name class="text-sm font-semibold text-muted"></span>
+                    <button data-logout class="min-h-10 cursor-pointer rounded-md border border-line px-3 text-sm font-semibold text-muted hover:border-sage hover:text-sage" type="button">Keluar</button>
+                </div>
+            </header>
+
+            <main class="py-12">
+                <section class="grid grid-cols-[minmax(0,1fr)_280px] items-start gap-8 max-md:grid-cols-1">
+                    <div>
+                        <p class="text-xs font-bold uppercase text-sage">Akses viewer</p>
+                        <h2 class="mt-3 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-tight">Akun Anda siap digunakan.</h2>
+                        <p class="mt-4 max-w-2xl text-base leading-7 text-muted">Role viewer memiliki akses baca terbatas. Fitur pencarian riset dan pengaturan model tidak ditampilkan untuk akun ini.</p>
+                    </div>
+                    <aside class="rounded-lg border border-line bg-white p-5">
+                        <p class="text-xs font-bold uppercase text-muted">Role aktif</p>
+                        <p class="mt-2 text-xl font-bold text-sage-dark">Viewer</p>
+                        <p class="mt-3 text-sm leading-6 text-muted">Hubungi administrator bila Anda memerlukan akses researcher.</p>
+                    </aside>
+                </section>
+            </main>
+        </div>
+
+        <script src="/static/js/session.js?v=1" defer></script>
+    </body>
+</html>

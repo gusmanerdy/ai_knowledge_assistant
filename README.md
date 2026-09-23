@@ -4,6 +4,42 @@ AI Knowledge Assistant is an early-stage research assistant for discovering, sum
 
 The current product direction is to help users search trusted scholarly sources, review relevant papers, and generate grounded research briefs with clear citations.
 
+## Project Structure
+
+```text
+backend/
+  app/
+    clients/       External model clients for OpenRouter and Ollama
+    core/          Authentication, settings, and project paths
+    services/      Paper discovery, ranking, and answer generation
+    main.py        FastAPI application entry point
+  tests/           Backend automated tests
+  requirements.txt
+
+frontend/
+  pages/           HTML pages served by FastAPI
+  static/
+    css/           Tailwind source and compiled CSS
+    images/        Favicons and browser assets
+    js/            Page-specific browser scripts
+  package.json     Frontend build dependencies and commands
+
+database/
+  migrations/      Ordered PostgreSQL migrations
+  queries/         Reference and diagnostic SQL queries
+
+infrastructure/
+  docker-compose.yml
+  ollama/          Ollama model definitions
+
+storage/
+  documents/       Local source documents
+  model_settings.json  Runtime model settings, ignored by Git
+
+docs/
+  notes/           Planning and historical technical notes
+```
+
 ## Project Vision
 
 The goal is to build a topic-bounded academic research assistant.
@@ -98,6 +134,12 @@ Available FastAPI endpoints:
 
 ```text
 GET  /health             Check service status
+GET  /login              Sign in to the application
+POST /auth/login         Create an 8-hour signed session
+POST /auth/logout        End the active session
+GET  /admin              Manage the active model response configuration
+GET  /admin/model-settings
+PUT  /admin/model-settings
 POST /papers/search      Search for papers by topic
 POST /research/query     Answer a question with cited paper abstracts via OpenRouter or Ollama
 ```
@@ -136,15 +178,15 @@ PostgreSQL should store paper metadata, authors, sources, saved searches, summar
 
 Meilisearch can be considered later as Phase 2 if the app needs a more polished search experience with typo tolerance, search-as-you-type, or dedicated keyword ranking. It should be treated as a secondary index synced from PostgreSQL, not as the source of truth.
 
-The initial database design lives in `docs/database-design.md`. The first PostgreSQL + pgvector migration is in `db/migrations/001_init_pgvector.sql`, with a sample hybrid keyword/vector query in `db/queries/hybrid_paper_search.sql`.
+The initial database design lives in `docs/database-design.md`. PostgreSQL migrations are in `database/migrations`, with a sample hybrid keyword/vector query in `database/queries/hybrid_paper_search.sql`.
 
 For local development, start PostgreSQL with:
 
 ```bash
-docker compose up -d postgres
+docker compose -f infrastructure/docker-compose.yml up -d postgres
 ```
 
-This uses the `pgvector/pgvector:pg16` image and automatically applies migrations mounted from `db/migrations` on first database initialization.
+This uses the `pgvector/pgvector:pg16` image and automatically applies migrations mounted from `database/migrations` on first database initialization.
 
 ## Installation
 
@@ -165,7 +207,16 @@ source .venv/bin/activate
 Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
+```
+
+Install frontend build dependencies:
+
+```bash
+cd frontend
+npm install
+npm run css:build
+cd ..
 ```
 
 ## Running the Project
@@ -184,15 +235,38 @@ The `.env` file is ignored by Git. The default answer model is `google/gemini-3.
 Start the application:
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn backend.app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000/`. The research form accepts a question in Indonesian or English, searches Semantic Scholar and OpenAlex with the original question and English research terms, and returns an answer in the question's language with links to the cited papers. Select OpenRouter for the cloud model or Local (Ollama) for a model running on this Mac.
+During frontend development, run the Tailwind watcher in a second terminal:
+
+```bash
+cd frontend
+npm run css:dev
+```
+
+Open `http://127.0.0.1:8000/`. The research form accepts a question in Indonesian or English, searches Semantic Scholar and OpenAlex with the original question and English research terms, and returns an answer in the question's language with links to the cited papers.
+
+Open `http://127.0.0.1:8000/admin` to manage the active provider, response intent, response instruction, token limit, paragraph count, temperature, and evidence policy. The saved configuration is applied to subsequent research requests without restarting the server.
+
+The application uses signed, HTTP-only session cookies and role-based access control:
+
+- `admin` can use research, manage model settings, and open API documentation.
+- `researcher` can use the research workflow but cannot access admin settings.
+- `viewer` receives a read-only account page.
+
+Configure `AUTH_SECRET` and the three account credentials in `.env`. When those variables are absent, local development defaults are `admin` / `admin123`, `researcher` / `research123`, and `viewer` / `viewer123`. Replace these defaults before exposing the application outside local development.
 
 For local inference with the existing GGUF file, import it into Ollama:
 
 ```bash
-ollama create qwen2.5-3b-instruct-q6k -f models/qwen2.5-3b-instruct.Modelfile
+ollama create qwen2.5-3b-instruct-q6k -f infrastructure/ollama/qwen2.5-3b-instruct.Modelfile
+```
+
+Run the backend tests from the project root:
+
+```bash
+python -m unittest backend.tests.test_research -q
 ```
 
 The current answer uses titles and abstracts returned by the academic APIs. It does not read full papers or search stored pgvector embeddings yet. The PostgreSQL migrations can be applied separately; they are not required for this OpenRouter flow.

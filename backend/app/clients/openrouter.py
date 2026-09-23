@@ -7,13 +7,14 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 
-from app.model_client import ModelError
+from backend.app.clients.model_client import ModelError
+from backend.app.core.paths import PROJECT_ROOT
 
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "google/gemini-3.8-flash"
 
-load_dotenv()
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 class OpenRouterClient:
@@ -29,11 +30,13 @@ class OpenRouterClient:
         schema_name: str,
         schema: dict[str, Any],
         max_tokens: int,
+        temperature: float = 0,
     ) -> dict[str, Any]:
         payload = {
             "model": self.model,
             "messages": messages,
             "max_tokens": max_tokens,
+            "temperature": temperature,
             "stream": False,
             "response_format": {
                 "type": "json_schema",
